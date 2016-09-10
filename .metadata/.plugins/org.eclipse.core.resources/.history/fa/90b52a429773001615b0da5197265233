@@ -1,0 +1,83 @@
+#include "shell.h"
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <errno.h>
+#include <fcntl.h>
+#include <iostream>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+using std::cerr;
+using std::string;
+using std::vector;
+
+int Shell::Execute(const Job& piped_cmds) {
+	vector<Command> cmds = piped_cmds.cmds;
+	// Create file descriptors to pipe data between commands.
+
+	pid_t pgid = piped_cmds.Run(path_resolver_);
+	if (pgid == -1) {
+		return -1;
+	}
+	int set_foreground_pgid_status = tcsetpgrp(STDIN_FILENO, pgid);
+	if (set_foreground_pgid_status == -1) {
+		cerr << "Unable to set foreground PGID: " << strerror(errno) << std::endl;
+		return -1;
+	}
+
+	int exit_status = -1;
+	for (size_t i = 0; i < cmds.size(); i++) {
+		int status;
+		// For child to change state.
+		int pid = waitpid(-1, &status, WUNTRACED);
+		if (WIFSTOPPED(status)) {
+			cerr << "Child (" << pid << ") was stopped by signal" << std::endl;
+		} else {
+			cerr << "Process (" << pid << ") terminated." << std::endl;
+		}
+
+		if (pid == -1) {
+			cerr << "Error waiting for child: "
+					<< strerror(errno) << std::endl;
+			return -1;
+		}
+		// Identify which child process closed.
+		size_t child_index;
+		bool child_index_set = false;
+		for (size_t j = 0; j < child_pids.size(); j++) {
+			if (pid == child_pids[j]) {
+				child_index = j;
+				child_index_set = true;
+			}
+		}
+		if (!child_index_set) {
+			cerr << "Error: Wait returns an invalid child index" << std::endl;
+		}
+		// Close input/output pipe, if any. This will cause the next command
+		if (child_index < child_pids.size() - 1) {
+			close(pipe_descriptors[child_index].write_fd);
+		}
+		if (child_index > 0) {
+			close(pipe_descriptors[child_index - 1].read_fd);
+		}
+		if (child_index == child_pids.size() - 1) {
+			exit_status = WEXITSTATUS(status);
+		}
+	}
+	// Reset controlling terminal to shell.
+	int status = tcsetpgrp(STDIN_FILENO, getpgid(getpid()));
+	if (status == -1) {
+		cerr << "Unable to reset foreground PGID to shell: " << strerror(errno) << std::endl;
+		return -1;
+	}
+
+	return exit_status;
+}
+
+// Execute the program described by this command. If successful, will not
+// return because it overwrites the existing program.
+void Shell::Run(Command cmd) const {
+
+}

@@ -1,0 +1,16 @@
+#include "string_utils.h"
+
+using std::string;
+using std::vector;
+
+vector<string> Split(const string& str, char delim) {
+	vector<string> tokens;
+	for (int start = 0, end = 0; end < str.size(); end++) {
+		if (str[end] == delim) {
+			if (end > start) {
+				tokens.push_back(str.substr(start, end - start));
+			}
+			start = end + 1;
+		}
+	}
+}

@@ -1,0 +1,45 @@
+#include <cstdio>
+#include <cstring>
+#include <fcntl.h>
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+#include <iostream>
+#include <fstream>
+
+#include "shell.h"
+#include "utils/test_utils.h"
+
+using std::string;
+using std::vector;
+
+TEST(Execute, ls) {
+	// Create a directory with a single empty file.
+	CreateDirectoryWithFiles("test_ls", vector<string>{"a"});
+
+	// Redirect stdout to output file.
+	const string dir_base_path = getenv("TEST_TMPDIR");
+	const string output_file_path = dir_base_path +
+		(*dir_base_path.rbegin() == '/' ? "" : "/") + "ls_output.dat";
+	int fd = open(output_file_path.c_str(), O_CREAT | O_EXCL);
+	int status = dup2(fd, fileno(stdout));
+	if (status == -1) {
+		FAIL() << "Error replacing stdout: " << strerror(errno);
+	}
+
+	Command cmd;
+	cmd.filename = "ls";
+	cmd.argv = {"ls"};
+	cmd.envp = {};
+
+	Shell shell("/bin");
+	shell.Execute(cmd);
+
+	std::filebuf fb;
+	if (fb.open (output_file_path.c_str(), std::ios::in))
+	{
+	std::istream is(&fb);
+	while (is)
+	  std::cout << char(is.get());
+	fb.close();
+	}
+}

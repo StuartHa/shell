@@ -1,0 +1,87 @@
+#ifndef PIPED_COMMANDS
+#define PIPED_COMMANDS
+
+#include <cstring>
+#include <errno.h>
+#include <string>
+#include <vector>
+#include <cstdio>
+
+#include "path_resolver.h"
+
+struct Command {
+	std::vector<std::string> argv;
+
+	static bool Parse(const std::string command_str,
+			   	   	  Command* output_command);
+	void Run(const PathResolver& path_resolver) const;
+
+	std::string input;
+	std::string output;
+};
+
+struct Job {
+	Job() {};
+
+	Job(const Command& cmd): cmds{cmd} {}
+
+	Job Pipe(const Command& cmd) {
+		cmds.push_back(cmd);
+		return *this;
+	}
+	RunningJobDescriptor Run(const PathResolver& path_resolver) const;
+
+
+
+	int Wait(Status* status) const;
+
+	// Parse a string into commands. A trailing '&' means the job should
+	// run in the background.
+	static bool Parse(const std::string& piped_commands_str,
+	   	 	   	      Job* output_piped_commands);
+
+
+	std::vector<Command> cmds;
+	bool background = false;
+	pid_t pgid;
+private:
+	struct PipeDescriptor {
+		PipeDescriptor(int read_fd_arg, int write_fd_arg): read_fd(read_fd_arg),
+			write_fd(write_fd_arg) {}
+
+		int read_fd;
+		int write_fd;
+	};
+};
+
+struct RunningJobDescriptor {
+	pid_t pgid;
+	std::vector<pid_t> pids;
+
+	enum class Status {
+		STOPPED,
+		TERMINATED
+	};
+
+	int Wait(Status* status) {
+		for (size_t i = 0; i < pids.size(); i++) {
+			int status;
+			// For child to change state.
+			int pid = waitpid(pids[i], &status, WUNTRACED);
+			if (WIFSTOPPED(status)) {
+				*status = Status::STOPPED;
+			} else {
+				*status = Status::TERMINATED;
+			}
+
+			if (pid == -1) {
+				cerr << "Error waiting for child: "
+						<< strerror(errno) << std::endl;
+				return -1;
+			}
+		}
+		return 0; // Success
+	}
+};
+
+#endif  // PIPED_COMMANDS

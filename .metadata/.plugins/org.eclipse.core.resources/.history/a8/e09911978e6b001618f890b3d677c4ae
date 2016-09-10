@@ -1,0 +1,31 @@
+#include "shell.h"
+
+#include <errno.h>
+#include <iostream>
+
+using std::cerr;
+using std::vector;
+
+class Shell {
+public:
+	int Execute(const PipedCommands& piped_cmds) {
+		vector<Command> cmds = piped_cmds.GetCommands();
+		// Create file descriptors to pipe data between commands.
+		PipeDescriptor s;
+		vector<PipeDescriptor> pipe_descriptors;
+		for (int i = 0; i < cmds.size() - 1; i++) {
+
+		}
+
+		for (const Command& cmd : cmds.size()) {
+			int pid = fork();
+			if (pid == 0) {
+				cmd.Run();
+				// Should never get here unless there was an error.
+				cerr << "Error in running command " << cmd.filename << ": "
+					 <<	strerror(errno) << std::endl;
+				return -1;
+			}
+		}
+	}
+};

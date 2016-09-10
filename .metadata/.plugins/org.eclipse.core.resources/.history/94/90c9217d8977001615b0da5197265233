@@ -1,0 +1,47 @@
+#ifndef PIPED_COMMANDS
+#define PIPED_COMMANDS
+
+#include <string>
+#include <vector>
+#include <cstdio>
+
+#include "path_resolver.h"
+
+struct Command {
+	std::vector<std::string> argv;
+
+	static bool Parse(const std::string command_str,
+			   	   	  Command* output_command);
+	void Run(const PathResolver& path_resolver) const;
+
+	std::string input;
+	std::string output;
+};
+
+struct Job {
+	Job() {};
+
+	Job(const Command& cmd): cmds{cmd} {}
+
+	Job Pipe(const Command& cmd) {
+		cmds.push_back(cmd);
+		return *this;
+	}
+	pid_t Run(const PathResolver& path_resolver) const;
+	int Wait(bool* stopped, bool* terminated) const;
+
+	static bool Parse(const std::string& piped_commands_str,
+	   	 	   	      Job* output_piped_commands);
+
+	std::vector<Command> cmds;
+private:
+	struct PipeDescriptor {
+		PipeDescriptor(int read_fd_arg, int write_fd_arg): read_fd(read_fd_arg),
+			write_fd(write_fd_arg) {}
+
+		int read_fd;
+		int write_fd;
+	};
+};
+
+#endif  // PIPED_COMMANDS

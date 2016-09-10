@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;shell/shell.cpp&apos; to &apos;shell_main.cc&apos;" description="Rename resource &apos;shell.cpp&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="shell.cpp" name="shell_main.cc" stamp="1471870299142" updateReferences="true"/>
+</session>

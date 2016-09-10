@@ -1,0 +1,58 @@
+#include "shell.h"
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <errno.h>
+#include <fcntl.h>
+#include <iostream>
+
+
+using std::cerr;
+using std::string;
+using std::vector;
+
+int Shell::Execute(const Job& piped_cmds) {
+	vector<Command> cmds = piped_cmds.cmds;
+	// Create file descriptors to pipe data between commands.
+	RunningJobDescriptor job_descriptor;
+	if (piped_cmds.cmds.size() == 1 && piped_cmds.cmds[0].argv[0] == "fg") {
+		if (background_jobs_.size() == 0) {
+			cerr << "No background job." << std::endl;
+			return -1;
+		}
+		job_descriptor = *background_jobs_.rbegin();
+		background_jobs_.pop_back();
+		killpg(job_descriptor.pgid, SIGCONT);
+	} else {
+		pgid = piped_cmds.Run(path_resolver_);
+		if (pgid == -1) {
+			return -1;
+		}
+	}
+
+	int set_foreground_pgid_status = tcsetpgrp(STDIN_FILENO, pgid);
+	if (set_foreground_pgid_status == -1) {
+		cerr << "Unable to set foreground PGID: " << strerror(errno) << std::endl;
+		return -1;
+	}
+
+	Job::Status status;
+	if (piped_cmds.Wait(&status) == -1) {
+		cerr << "Waiting for job failed." << std::endl;
+		return -1;
+	}
+
+	if (status == Job::STOPPED) {
+		background_pgids_.push_back(pgid);
+	}
+
+	// Reset controlling terminal to shell.
+	int error = tcsetpgrp(STDIN_FILENO, getpgid(getpid()));
+	if (error == -1) {
+		cerr << "Unable to reset foreground PGID to shell: " << strerror(errno) << std::endl;
+		return -1;
+	}
+
+	return 0;
+}

@@ -1,0 +1,27 @@
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
+#include "string_utils.h"
+
+using std::string;
+using std::vector;
+
+TEST(Split, Basic) {
+	vector<int> expected {"how", "now", "brown", "cow"};
+	EXPECT_THAT(expected, Split("how now brown cow", ' '));
+}
+
+TEST(Split, MultipleSpaces) {
+	vector<int> expected {"hi", "there"};
+	EXPECT_THAT(expected, Split("hi    there", ' '));
+}
+
+TEST(Split, BeginningAndEndingSpaces) {
+	vector<int> expected {"hi", "there"};
+	EXPECT_THAT(expected, Split("       hi    there     ", ' '));
+}
+
+TEST(Split, NonSpaceDelimiter) {
+	vector<int> expected {"he", "o "};
+	EXPECT_THAT(expected, Split("hello ", 'l'));
+}

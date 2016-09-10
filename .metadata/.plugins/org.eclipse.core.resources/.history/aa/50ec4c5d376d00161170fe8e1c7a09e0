@@ -1,0 +1,115 @@
+#include "shell.h"
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <errno.h>
+#include <iostream>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+using std::cerr;
+using std::vector;
+
+int Shell::Execute(const PipedCommands& piped_cmds, FILE* output_file) {
+	vector<Command> cmds = piped_cmds.GetCommands();
+	// Create file descriptors to pipe data between commands.
+	vector<PipeDescriptor> pipe_descriptors;
+	for (size_t i = 0; i < cmds.size() - 1; i++) {
+		int pipe_fd[2];
+		int status = pipe(pipe_fd);
+		if (status == -1) {
+			cerr << "Error creating pipe: " << strerror(errno) << std::endl;
+			return -1;
+		}
+		PipeDescriptor pipe_descriptor(pipe_fd[0], pipe_fd[1]);
+		pipe_descriptors.push_back(pipe_descriptor);
+	}
+
+	vector<int> child_pids;
+	for (size_t i = 0; i < cmds.size(); i++) {
+		int pid = fork();
+		if (pid == 0) {
+			// Close file descriptors that aren't needed.
+			for (size_t j = 0; j < cmds.size(); j++) {
+				close(pipe_descriptors[j].write_fd);
+			}
+
+			// Set up input/output pipes, if needed.
+			if (i > 0) {
+				int status = dup2(pipe_descriptors[i-1].read_fd, fileno(stdin));
+				if (status == -1) {
+					cerr << "Error setting stdin: " << strerror(errno) << std::endl;
+					return -1;
+				}
+				cerr << "Cmd " << i << " has input fd " << pipe_descriptors[i-1].read_fd << std::endl;
+			}
+			if (i < cmds.size() - 1) {
+				int status = dup2(pipe_descriptors[i].write_fd, fileno(stdout));
+				if (status == -1) {
+					cerr << "Error setting stdout: " << strerror(errno) << std::endl;
+					return -1;
+				}
+				cerr << "Cmd " << i << " has output fd " << pipe_descriptors[i].write_fd << std::endl;
+			}
+			if (i == cmds.size() - 1) {
+				int status = dup2(fileno(output_file), fileno(stdout));
+				if (status == -1) {
+					cerr << "Error setting stdout: " << strerror(errno) << std::endl;
+					return -1;
+				}
+				cerr << "Cmd " << i << " has output fd " << fileno(output_file) << std::endl;
+			}
+
+			Command cmd = cmds[i];
+			Run(cmd);
+			// Should never get here unless there was an error.
+			cerr << "Error in running command " << cmd.filename << ": "
+				 <<	strerror(errno) << std::endl;
+			return -1;
+		} else {
+			child_pids.push_back(pid);
+		}
+	}
+
+	int exit_status = -1;
+	for (size_t i = 0; i < child_pids.size(); i++) {
+		int status;
+		cerr << "Waiting on child " << child_pids[i] << std::endl;
+		int error = waitpid(child_pids[i], &status, 0);
+		if (error == -1) {
+			cerr << "Error waiting for child " << child_pids[i] << ": "
+					<< strerror(errno) << std::endl;
+			return -1;
+		}
+		cerr << "Finished waiting for: " << child_pids[i] << std::endl;
+		// Write EOF to the next piped command, if any.
+		if (i < child_pids.size() - 1) {
+			close(pipe_descriptors[i].write_fd);
+		}
+		if (i == child_pids.size() - 1) {
+			exit_status = WEXITSTATUS(status);
+		}
+	}
+	return exit_status;
+}
+
+// Execute the program described by this command. If successful, will not
+// return because it overwrites the existing program.
+void Shell::Run(Command cmd) const {
+	cmd.filename = path_resolver_.Resolve(cmd.filename);
+
+	char* argv_arg[cmd.argv.size() + 1];
+	for (size_t i = 0; i < cmd.argv.size(); i++) {
+		argv_arg[i] = (char*)cmd.argv[i].c_str();
+	}
+	argv_arg[cmd.argv.size()] = NULL;
+
+	char* envp_arg[cmd.envp.size() + 1];
+	for (size_t i = 0; i < cmd.envp.size(); i++) {
+		envp_arg[i] = (char*)cmd.envp[i].c_str();
+	}
+	envp_arg[cmd.envp.size()] = NULL;
+
+	execve(cmd.filename.c_str(), argv_arg, envp_arg);
+}

@@ -1,0 +1,26 @@
+#include <cstdio>
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+#include "piped_commands.h"
+
+using testing::ElementsAre;
+
+TEST(Command_Parse, Basic) {
+	Command cmd;
+	bool status = Command::Parse("wc -l", &cmd);
+
+	EXPECT_TRUE(status);
+	EXPECT_THAT(cmd.argv, ElementsAre("wc", "-l"));
+	EXPECT_EQ("", cmd.input);
+	EXPECT_EQ("", cmd.output);
+}
+
+TEST(Command_Parse, Output) {
+	Command cmd;
+	bool status = Command::Parse("wc >out.txt -l", &cmd);
+
+	EXPECT_TRUE(status);
+	EXPECT_THAT(cmd.argv, ElementsAre("wc", "-l"));
+	EXPECT_EQ("", cmd.input);
+	EXPECT_EQ("out.txt", cmd.output);
+}

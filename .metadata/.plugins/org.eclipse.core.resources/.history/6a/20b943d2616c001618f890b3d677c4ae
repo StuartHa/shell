@@ -1,0 +1,29 @@
+cc_library(
+    name = "path_resolver",
+    srcs = ["path_resolver.cc"],
+    hdrs = ["path_resolver.h"],
+    deps = [
+        "utils:string_utils"
+    ],
+)
+
+cc_test(
+    name = "path_resolver_test",
+    srcs = ["path_resolver_test.cc"],
+    copts = ["-Iexternal/gtest/include"],
+    deps = [
+        "@gtest//:main",
+        "@gmock//:main",
+        ":path_resolver",
+    ],
+    timeout = "short"
+)
+
+cc_library(
+    name = "shell",
+    srcs = ["shell.cc"],
+    hdrs = ["shell.h"],
+    deps = [
+        ":path_resolver"
+    ],
+)

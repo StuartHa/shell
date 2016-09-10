@@ -1,0 +1,74 @@
+#ifndef SHELL
+#define SHELL
+
+#include <iostream>
+#include <string>
+#include <unistd.h>
+#include <vector>
+
+#include "path_resolver.h"
+
+struct Command {
+	std::string filename;
+	std::vector<std::string> argv;
+	std::vector<std::string> envp;
+
+	// Execute the program described by this command. If successful, will not
+	// return because it overwrites the existing program.
+	void Run() const {
+		for (int i = 0; i < argv.size(); i++)
+			std::cout << argv[i] << std::endl;
+		char* argv_arg[argv.size() + 1];
+		for (size_t i = 0; i < argv.size() - 1; i++) {
+			argv_arg[i] = (char*)argv[i].c_str();
+		}
+		argv_arg[argv.size()] = NULL;
+
+		char* envp_arg[envp.size() + 1];
+		for (size_t i = 0; i < envp.size() - 1; i++) {
+			envp_arg[i] = (char*)envp[i].c_str();
+		}
+		envp_arg[envp.size()] = NULL;
+
+		execve(filename.c_str(), argv_arg, envp_arg);
+//		char* argv_arg[] = {"ls", "/home/stuart/dev/shell/shell", NULL};
+//		execve("/bin/ls", argv_arg, NULL);
+	}
+};
+
+class PipedCommands {
+public:
+	PipedCommands(const Command& cmd): cmds_{cmd} {}
+
+	PipedCommands Pipe(const Command& cmd) {
+		cmds_.push_back(cmd);
+		return *this;
+	}
+
+	std::vector<Command> GetCommands() const {
+		return cmds_;
+	}
+private:
+	std::vector<Command> cmds_;
+};
+
+class Shell {
+public:
+	Shell(const PathResolver& path_resolver):
+		path_resolver_(path_resolver) {};
+
+	int Execute(const PipedCommands& piped_cmds, FILE* output_file);
+private:
+	struct PipeDescriptor {
+		PipeDescriptor(int read_fd_arg, int write_fd_arg): read_fd(read_fd_arg),
+			write_fd(write_fd_arg) {}
+
+		int read_fd;
+		int write_fd;
+	};
+
+	PathResolver path_resolver_;
+};
+
+
+#endif  //  SHELL

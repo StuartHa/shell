@@ -1,0 +1,6 @@
+#include "shell.h"
+
+class Shell {
+public:
+	int Execute(const PipedCommands& piped_cmds);
+};

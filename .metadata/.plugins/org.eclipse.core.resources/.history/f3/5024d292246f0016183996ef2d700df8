@@ -1,0 +1,47 @@
+#ifndef SHELL
+#define SHELL
+
+#include <iostream>
+#include <string>
+#include <unistd.h>
+#include <vector>
+
+#include "path_resolver.h"
+
+/*
+ *  Input can happen on any piped command. Eg. wc < a.txt | wc is different than wc | wc < a.txt.
+ *  ProcessGroup abstraction?
+ */
+
+struct Command {
+	std::string filename;
+	std::vector<std::string> argv;
+	std::vector<std::string> envp;
+
+	FILE* input;
+	FILE* output;
+};
+
+class Shell {
+public:
+	Shell(const PathResolver& path_resolver):
+		path_resolver_(path_resolver) {};
+
+	Shell() {};
+
+	int Execute(const PipedCommands& piped_cmds, FILE* output_file, FILE* input_file);
+private:
+	void Run(Command cmd) const;
+	struct PipeDescriptor {
+		PipeDescriptor(int read_fd_arg, int write_fd_arg): read_fd(read_fd_arg),
+			write_fd(write_fd_arg) {}
+
+		int read_fd;
+		int write_fd;
+	};
+
+	PathResolver path_resolver_;
+};
+
+
+#endif  //  SHELL

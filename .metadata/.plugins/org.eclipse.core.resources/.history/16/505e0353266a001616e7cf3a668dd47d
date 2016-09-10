@@ -1,0 +1,17 @@
+#ifndef PATH_RESOLVER
+#define PATH_RESOLVER
+
+#include <string>
+#include <vector>
+
+class PathResolver {
+public:
+	PathResolver(const std::string& colon_delim_path):
+		path_(utils::Split(colon_delim_path, ':')) {}
+
+	std::string Resolve(const std::string& name);
+private:
+	std::vector<std::string> path_;
+};
+
+#endif  // PATH_RESOLVER

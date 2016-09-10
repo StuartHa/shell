@@ -1,0 +1,29 @@
+#include <cstdlib>
+#include <iostream>
+#include <string>
+#include <unistd.h>
+
+using std::cin;
+using std::cout;
+using std::cerr;
+using std::endl;
+using std::string;
+
+int main(int argc, char* argv[], char* envp[]) {
+	while (true) {
+		string line;
+		std::getline(cin, line);
+		PipedCommands piped_cmds;
+		bool status = PipedCommands::Parse(line, &piped_cmds);
+		if (!status) {
+			cerr < "Error parsing command." << endl;
+		}
+
+	}
+	// Print PID.
+	cout << "Process ID: " << getpid() << endl;
+	// Print the PID of the foreground process group.
+	cout << "Foreground process group ID: " << tcgetpgrp(STDERR_FILENO) << endl;
+
+	return EXIT_SUCCESS;
+}

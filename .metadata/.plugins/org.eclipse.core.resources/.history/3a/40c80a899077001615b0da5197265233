@@ -1,0 +1,68 @@
+#ifndef SHELL
+#define SHELL
+
+#include <cstring>
+#include <errno.h>
+#include <iostream>
+#include <signal.h>
+#include <string>
+#include <unistd.h>
+#include <vector>
+
+#include "path_resolver.h"
+#include "job.h"
+
+/*
+ *  DONE: Support input/output on each command.
+ *  Support & for running commands in background.
+ *  Handle signals properly.
+ *  Implement 'cd' shell builtin.
+ *  Support pipelined builtin-in commands
+ *  Implement history. Use readline library?
+ *  Implement autocompletion.
+ */
+
+struct RunningJobDescriptor {
+	pid_t pgid;
+	std::vector<pid_t> pids;
+
+	int Wait() {
+		for (size_t i = 0; i < pids.size(); i++) {
+			int status;
+			// For child to change state.
+			int pid = waitpid(pids[i], &status, WUNTRACED);
+			if (WIFSTOPPED(status)) {
+				*status = Job::STOPPED;
+			} else {
+				*status = Job::TERMINATED;
+			}
+
+			if (pid == -1) {
+				cerr << "Error waiting for child: "
+						<< strerror(errno) << std::endl;
+				return -1;
+			}
+		}
+		return 0; // Success
+	}
+};
+
+class Shell {
+public:
+	Shell(const PathResolver& path_resolver):
+		path_resolver_(path_resolver) {
+		// Ignore SIGTTOU.
+		signal(SIGTTOU, SIG_IGN);
+	};
+
+	Shell(): Shell(PathResolver()) {};
+
+	int Execute(const Job& piped_cmds);
+private:
+	PathResolver path_resolver_;
+	// Last element is most recent.
+	std::vector<RunningJobDescriptor> background_jobs_;
+};
+
+
+#endif  //  SHELL

@@ -1,0 +1,7 @@
+05:48:44 **** Incremental Build of configuration Default for project shell ****
+make all 
+g++ -O2 -g -Wall -fmessage-length=0   -c -o shell.o shell.cpp
+g++ -o shell shell.o 
+
+05:48:44 Build Finished (took 558ms)
+

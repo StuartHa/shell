@@ -1,0 +1,43 @@
+#include "shell.h"
+
+#include <errno.h>
+#include <iostream>
+
+using std::cerr;
+using std::vector;
+
+struct PipeDescriptor {
+	PipeDescriptor(int read_fd_arg, int write_fd_arg): read_fd(read_fd_arg),
+		write_fd(write_fd_arg) {}
+	int read_fd;
+	int write_fd;
+};
+
+class Shell {
+public:
+	int Execute(const PipedCommands& piped_cmds) {
+		vector<Command> cmds = piped_cmds.GetCommands();
+		// Create file descriptors to pipe data between commands.
+		vector<PipeDescriptor> pipe_descriptors;
+		for (int i = 0; i < cmds.size() - 1; i++) {
+			int pipe_fd[2];
+			int status = pipe(pipe_fd);
+			if (status == -1) {
+				cerr << "Error creating pipe: " << strerror(errno) << std::endl;
+				return -1;
+			}
+			PipeDescriptor pipe_descriptor = { .read_fd = pipe_fd[0], .write_fd = pipe_fd[1] };
+		}
+
+		for (const Command& cmd : cmds.size()) {
+			int pid = fork();
+			if (pid == 0) {
+				cmd.Run();
+				// Should never get here unless there was an error.
+				cerr << "Error in running command " << cmd.filename << ": "
+					 <<	strerror(errno) << std::endl;
+				return -1;
+			}
+		}
+	}
+};

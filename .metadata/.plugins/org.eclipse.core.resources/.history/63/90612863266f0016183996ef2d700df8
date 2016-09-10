@@ -1,0 +1,18 @@
+#include "piped_commands.h"
+
+#include "utils/string_utils.h"
+
+using std::string;
+using std::vector;
+
+bool Command::Parse(const string command_str,
+					Command* output_command) {
+
+}
+
+// wc < a.txt | wc
+bool PipedCommands::Parse(const string& piped_commands_str,
+   	 	 	 	 	   	  PipedCommands* output_piped_commands) {
+	vector<string> commands = ::utils::Split(piped_commands_str, '|');
+
+}

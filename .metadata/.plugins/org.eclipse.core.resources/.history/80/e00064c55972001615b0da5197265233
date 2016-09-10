@@ -1,0 +1,18 @@
+#include <cstdlib>
+#include <iostream>
+#include <string>
+#include <unistd.h>
+
+using std::cin;
+using std::cout;
+using std::endl;
+using std::string;
+
+int main(int argc, char* argv[], char* envp[]) {
+	// Print PID.
+	cout << "Process ID: " << getpid() << endl;
+	// Print the PID of the foreground process group.
+	cout << "Foreground process group ID: " << tcgetpgrp(STDERR_FILENO) << endl;
+
+	return EXIT_SUCCESS;
+}

@@ -1,0 +1,51 @@
+05:47:59 **** Build of configuration Default for project shell ****
+make all 
+g++ -O2 -g -Wall -fmessage-length=0   -c -o shell.o shell.cpp
+shell.cpp: In function ‘int main()’:
+shell.cpp:10:20: error: no matching function for call to ‘std::basic_istream<char>::getline(std::__cxx11::string&)’
+   cin.getline(input);
+                    ^
+In file included from /usr/include/c++/5/iostream:40:0,
+                 from shell.cpp:1:
+/usr/include/c++/5/istream:647:5: note: candidate: std::basic_istream<_CharT, _Traits>& std::basic_istream<_CharT, _Traits>::getline(std::basic_istream<_CharT, _Traits>::char_type*, std::streamsize, std::basic_istream<_CharT, _Traits>::char_type) [with _CharT = char; _Traits = std::char_traits<char>; std::basic_istream<_CharT, _Traits>::char_type = char; std::streamsize = long int]
+     basic_istream<char>::
+     ^
+/usr/include/c++/5/istream:647:5: note:   candidate expects 3 arguments, 1 provided
+/usr/include/c++/5/istream:427:7: note: candidate: std::basic_istream<_CharT, _Traits>::__istream_type& std::basic_istream<_CharT, _Traits>::getline(std::basic_istream<_CharT, _Traits>::char_type*, std::streamsize) [with _CharT = char; _Traits = std::char_traits<char>; std::basic_istream<_CharT, _Traits>::__istream_type = std::basic_istream<char>; std::basic_istream<_CharT, _Traits>::char_type = char; std::streamsize = long int]
+       getline(char_type* __s, streamsize __n)
+       ^
+/usr/include/c++/5/istream:427:7: note:   candidate expects 2 arguments, 1 provided
+shell.cpp:13:23: error: ‘puts’ was not declared in this scope
+  puts("Hello World!!!");
+                       ^
+shell.cpp:14:9: error: ‘EXIT_SUCCESS’ was not declared in this scope
+<builtin>: recipe for target 'shell.o' failed
+  return EXIT_SUCCESS;
+         ^
+make: *** [shell.o] Error 1
+05:48:13 **** Incremental Build of configuration Default for project shell ****
+make all 
+g++ -O2 -g -Wall -fmessage-length=0   -c -o shell.o shell.cpp
+shell.cpp: In function ‘int main()’:
+shell.cpp:11:20: error: no matching function for call to ‘std::basic_istream<char>::getline(std::__cxx11::string&)’
+   cin.getline(input);
+                    ^
+In file included from /usr/include/c++/5/iostream:40:0,
+                 from shell.cpp:1:
+/usr/include/c++/5/istream:647:5: note: candidate: std::basic_istream<_CharT, _Traits>& std::basic_istream<_CharT, _Traits>::getline(std::basic_istream<_CharT, _Traits>::char_type*, std::streamsize, std::basic_istream<_CharT, _Traits>::char_type) [with _CharT = char; _Traits = std::char_traits<char>; std::basic_istream<_CharT, _Traits>::char_type = char; std::streamsize = long int]
+     basic_istream<char>::
+     ^
+/usr/include/c++/5/istream:647:5: note:   candidate expects 3 arguments, 1 provided
+/usr/include/c++/5/istream:427:7: note: candidate: std::basic_istream<_CharT, _Traits>::__istream_type& std::basic_istream<_CharT, _Traits>::getline(std::basic_istream<_CharT, _Traits>::char_type*, std::streamsize) [with _CharT = char; _Traits = std::char_traits<char>; std::basic_istream<_CharT, _Traits>::__istream_type = std::basic_istream<char>; std::basic_istream<_CharT, _Traits>::char_type = char; std::streamsize = long int]
+       getline(char_type* __s, streamsize __n)
+       ^
+/usr/include/c++/5/istream:427:7: note:   candidate expects 2 arguments, 1 provided
+shell.cpp:14:23: error: ‘puts’ was not declared in this scope
+  puts("Hello World!!!");
+                       ^
+<builtin>: recipe for target 'shell.o' failed
+make: *** [shell.o] Error 1
+05:48:44 **** Incremental Build of configuration Default for project shell ****
+make all 
+g++ -O2 -g -Wall -fmessage-length=0   -c -o shell.o shell.cpp
+g++ -o shell shell.o 

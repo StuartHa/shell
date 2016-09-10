@@ -1,0 +1,67 @@
+#ifndef SHELL
+#define SHELL
+
+#include <string>
+#include <unistd.h>
+#include <vector>
+
+#include "path_resolver.h"
+
+struct Command {
+	std::string filename;
+	std::vector<std::string> argv;
+	std::vector<std::string> envp;
+
+	// Execute the program described by this command. If successful, will not
+	// return because it overwrites the existing program.
+	void Run() const {
+		char* const argv_arg[argv.size()];
+		for (int i = 0; i < argv.size(); i++) {
+			argv_arg[i] = argv[i].c_str();
+		}
+
+		char* const envp_arg[envp.size()];
+		for (int i = 0; i < envp.size(); i++) {
+			envp_arg[i] = envp[i].c_str();
+		}
+
+		execve(filename.c_str(), argv_arg, envp_arg);
+	}
+};
+
+class PipedCommands {
+public:
+	PipedCommands(const Command& cmd): cmds_{cmd} {}
+
+	PipedCommands Pipe(const Command& cmd) {
+		cmds_.push_back(cmd);
+		return *this;
+	}
+
+	std::vector<Command> GetCommands() const {
+		return cmds_;
+	}
+private:
+	std::vector<Command> cmds_;
+};
+
+class Shell {
+public:
+	Shell(const std::string& colon_delim_path):
+		path_resolver_(colon_delim_path) {};
+
+	int Execute(const PipedCommands& piped_cmds);
+private:
+	struct PipeDescriptor {
+		PipeDescriptor(int read_fd_arg, int write_fd_arg): read_fd(read_fd_arg),
+			write_fd(write_fd_arg) {}
+
+		int read_fd;
+		int write_fd;
+	};
+
+	PathResolver path_resolver_;
+};
+
+
+#endif  //  SHELL

@@ -1,0 +1,8 @@
+#include "shell.h"
+
+class Shell {
+public:
+	Shell(const std::string& colon_delim_path);
+
+	int Execute(const PipedCommands& piped_cmds);
+};

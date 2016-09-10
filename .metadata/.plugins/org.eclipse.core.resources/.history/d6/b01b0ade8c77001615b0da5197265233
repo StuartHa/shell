@@ -1,0 +1,47 @@
+#ifndef SHELL
+#define SHELL
+
+#include <iostream>
+#include <signal.h>
+#include <string>
+#include <unistd.h>
+#include <vector>
+
+#include "path_resolver.h"
+#include "job.h"
+
+/*
+ *  DONE: Support input/output on each command.
+ *  Support & for running commands in background.
+ *  Handle signals properly.
+ *  Implement 'cd' shell builtin.
+ *  Support pipelined builtin-in commands
+ *  Implement history. Use readline library?
+ *  Implement autocompletion.
+ */
+
+struct JobAndPgid {
+	Job job;
+	pid_t pgid;
+};
+
+class Shell {
+public:
+	Shell(const PathResolver& path_resolver):
+		path_resolver_(path_resolver) {
+		// Ignore SIGTTOU.
+		signal(SIGTTOU, SIG_IGN);
+	};
+
+	Shell(): Shell(PathResolver()) {};
+
+	int Execute(const Job& piped_cmds);
+private:
+
+	PathResolver path_resolver_;
+	// Last element is most recent.
+	std::vector<pid_t> background_pgids_;
+};
+
+
+#endif  //  SHELL

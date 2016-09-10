@@ -1,0 +1,15 @@
+#ifndef SHELL
+#define SHELL
+
+#include <string>
+#include <vector>
+
+class Shell {
+public:
+	Shell(const std::string& colon_delim_path);
+private:
+
+};
+
+
+#endif  //  SHELL

@@ -1,0 +1,44 @@
+#include "piped_commands.h"
+
+#include <cstdio>
+#include <cstring>
+#include <errno.h>
+#include "utils/string_utils.h"
+
+using std::cerr;
+using std::endl;
+using std::string;
+using std::vector;
+
+bool Command::Parse(const string command_str,
+					Command* output_command) {
+	vector<string> tokens = ::utils::Split(command_str, ' ');
+	bool next_token_is_input = false;
+	bool next_token_is_output = false;
+	for (const string& token : tokens) {
+		if (token == ">") {
+
+		} else if (token == "<") {
+			next_token_is_input = true;
+		}
+
+		if (*token.begin() == '>') {
+			if (token == ">") {
+				next_token_is_output = true;
+			} else {
+				string output_str = token.substr(1);
+				FILE* output = fopen(output_str.c_str(), "w");
+				if (output == nullptr) {
+					cerr << "Invalid output file: " << strerror(errno) << endl;
+				}
+			}
+		}
+	}
+}
+
+// wc < a.txt | wc
+bool PipedCommands::Parse(const string& piped_commands_str,
+   	 	 	 	 	   	  PipedCommands* output_piped_commands) {
+	vector<string> commands = ::utils::Split(piped_commands_str, '|');
+
+}

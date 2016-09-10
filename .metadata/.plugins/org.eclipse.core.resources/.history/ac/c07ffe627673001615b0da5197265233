@@ -1,0 +1,45 @@
+#include <cstdlib>
+#include <iostream>
+#include <string>
+#include <unistd.h>
+
+#include "piped_commands.h"
+#include "shell.h"
+
+using std::cin;
+using std::cout;
+using std::cerr;
+using std::endl;
+using std::string;
+
+static void handler(int sig) {
+	fprintf(stderr, "Process %ld received signal %d (%s)\n", (long) getpid(), sig, strsignal(sig));
+}
+
+int main(int argc, char* argv[], char* envp[]) {
+	// Setup signals, this probably doesn't belong here...
+	struct sigaction sa;
+
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_RESTART;
+	sa.sa_handler = handler;
+
+
+	Shell shell;
+	while (true) {
+		string line;
+		std::getline(cin, line);
+		PipedCommands piped_cmds;
+		bool status = PipedCommands::Parse(line, &piped_cmds);
+		if (!status) {
+			cerr << "Error parsing command." << endl;
+		}
+
+		if (line == "exit")
+			break;
+
+		shell.Execute(piped_cmds);
+	}
+
+	return EXIT_SUCCESS;
+}

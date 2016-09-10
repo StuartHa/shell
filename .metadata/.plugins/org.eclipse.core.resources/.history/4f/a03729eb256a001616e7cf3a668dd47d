@@ -1,0 +1,25 @@
+#ifndef SHELL
+#define SHELL
+
+#include <string>
+#include <vector>
+
+class PathResolver {
+public:
+	PathResolver(const std::string& colon_delim_path): path_(Split(colon_delim_path, ':')) {
+
+	}
+private:
+	std::vector<std::string> path_;
+};
+
+class Shell {
+public:
+
+	Shell(const std::string& colon_delim_path);
+private:
+
+};
+
+
+#endif  //  SHELL

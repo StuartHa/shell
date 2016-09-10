@@ -1,0 +1,17 @@
+class PipedCommands {
+public:
+	PipedCommands(const Command& cmd): cmds_{cmd} {}
+
+	PipedCommands Pipe(const Command& cmd) {
+		cmds_.push_back(cmd);
+		return *this;
+	}
+
+	PipedCommands Parse(const std::string& piped_command);
+
+	std::vector<Command> GetCommands() const {
+		return cmds_;
+	}
+private:
+	std::vector<Command> cmds_;
+};

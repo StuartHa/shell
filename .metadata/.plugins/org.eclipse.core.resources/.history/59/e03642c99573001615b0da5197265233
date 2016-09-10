@@ -1,0 +1,58 @@
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
+#include <string>
+#include <signal.h>
+#include <unistd.h>
+
+#include "piped_commands.h"
+#include "shell.h"
+
+using std::cin;
+using std::cout;
+using std::cerr;
+using std::endl;
+using std::string;
+
+static void handler(int sig) {
+	fprintf(stderr, "Process %ld received signal %d (%s)\n", (long) getpid(), sig, strsignal(sig));
+}
+
+int main(int argc, char* argv[], char* envp[]) {
+	// Setup signals, this probably doesn't belong here...
+	struct sigaction sa;
+
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_RESTART;
+	sa.sa_handler = handler;
+	sigaction(SIGINT, &sa, NULL);
+	sigaction(SIGTSTP, &sa, NULL);
+	sigaction(SIGCONT, &sa, NULL);
+	sigaction(SIGTTIN, &sa, NULL);
+
+	Shell shell;
+	while (true) {
+		cout << "$ ";
+		string line;
+		std::getline(cin, line);
+		if (cin.eof()) {
+			break;
+		}
+		if (line == "") {
+			continue;
+		}
+		Job piped_cmds;
+		bool status = Job::Parse(line, &piped_cmds);
+		if (!status) {
+			cerr << "Error parsing command." << endl;
+			continue;
+		}
+
+		if (line == "exit")
+			break;
+
+		shell.Execute(piped_cmds);
+	}
+
+	return EXIT_SUCCESS;
+}

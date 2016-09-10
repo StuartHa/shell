@@ -1,0 +1,9 @@
+#ifndef SHELL
+#define SHELL
+
+class Shell {
+
+};
+
+
+#endif  //  SHELL

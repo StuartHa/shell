@@ -1,0 +1,62 @@
+cc_library(
+    name = "path_resolver",
+    srcs = ["path_resolver.cc"],
+    hdrs = ["path_resolver.h"],
+    deps = [
+        "//shell/utils:string_utils"
+    ],
+)
+
+cc_test(
+    name = "path_resolver_test",
+    srcs = ["path_resolver_test.cc"],
+    copts = ["-Iexternal/gtest/include"],
+    deps = [
+        "@gtest//:main",
+        "@gmock//:main",
+        ":path_resolver",
+        "//shell/utils:test_utils",
+    ],
+    timeout = "short"
+)
+
+cc_library(
+    name = "shell",
+    srcs = ["shell.cc"],
+    hdrs = ["shell.h"],
+    deps = [
+        ":path_resolver",
+        ":piped_commands"
+    ],
+)
+
+cc_test(
+    name = "shell_test",
+    srcs = ["shell_test.cc"],
+    copts = ["-Iexternal/gtest/include"],
+    deps = [
+        "@gtest//:main",
+        "@gmock//:main",
+        "//shell/utils:test_utils",
+        ":shell",
+    ],
+    timeout = "short"
+)
+
+cc_library(
+    name = "piped_commands",
+    srcs = ["piped_commands.cc"],
+    hdrs = ["piped_commands.h"],
+    deps = [
+        "//shell/utils:string_utils"
+    ],
+)
+
+cc_binary(
+    name = "shell_main",
+    srcs = ["shell_main.cc"],
+    deps = [
+        ":shell",
+        ":path_resolver",
+    ],
+)

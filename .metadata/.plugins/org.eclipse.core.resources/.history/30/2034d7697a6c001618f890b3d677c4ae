@@ -1,0 +1,42 @@
+#include <cstdio>
+#include <cstring>
+#include <fcntl.h>
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
+#include "shell.h"
+#include "utils/test_utils.h"
+
+using std::string;
+using std::vector;
+
+FILE* CreateOutputFile(const string& file_name) {
+	const string dir_base_path = getenv("TEST_TMPDIR");
+	const string output_file_path = dir_base_path +
+		(*dir_base_path.rbegin() == '/' ? "" : "/") + file_name;
+	return fopen(output_file_path.c_str(), "w");
+}
+
+TEST(Execute, ls) {
+	// Create a directory with a single empty file.
+	CreateDirectoryWithFiles("test_ls", vector<string>{"a"});
+	FILE* output_file = CreateOutputFile("ls_output.dat");
+	// Redirect stdout to output file.
+
+
+	Command cmd;
+	cmd.filename = "ls";
+	string path_to_ls = dir_base_path + (*dir_base_path.rbegin() == '/' ? "" : "/") + "test_ls";
+	cmd.argv = {"ls", path_to_ls.c_str()};
+
+	Shell shell;
+	shell.Execute(cmd, output_file);
+
+	std::ifstream t(output_file_path);
+	std::stringstream buffer;
+	buffer << t.rdbuf();
+	EXPECT_EQ(buffer.str(), "a\n");
+}

@@ -1,0 +1,13 @@
+#include <iostream>
+#include <string>
+
+using std::cin;
+using std::string;
+
+int main(void) {
+	while (true) {
+		string
+	}
+	puts("Hello World!!!");
+	return EXIT_SUCCESS;
+}

@@ -1,0 +1,60 @@
+#include "shell.h"
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <errno.h>
+#include <fcntl.h>
+#include <iostream>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+using std::cerr;
+using std::string;
+using std::vector;
+
+int Shell::Execute(const Job& piped_cmds) {
+	vector<Command> cmds = piped_cmds.cmds;
+	// Create file descriptors to pipe data between commands.
+
+	pid_t pgid = piped_cmds.Run(path_resolver_);
+	if (pgid == -1) {
+		return -1;
+	}
+	int set_foreground_pgid_status = tcsetpgrp(STDIN_FILENO, pgid);
+	if (set_foreground_pgid_status == -1) {
+		cerr << "Unable to set foreground PGID: " << strerror(errno) << std::endl;
+		return -1;
+	}
+
+	bool stopped = false;
+	bool terminated = false;
+	if (piped_cmds.Wait(&stopped, &terminated) == -1) {
+		cerr << "Waiting for job failed." << std::endl;
+		return -1;
+	}
+	// How to send a signal to a process group? killpg
+	if (stopped && terminated) {
+		cerr << "Job returned that it was both stopped and terminated." << std::endl;
+		return -1;
+	}
+
+	if (stopped) {
+		background_pgids_.push_back(pgid);
+	}
+
+	// Reset controlling terminal to shell.
+	int status = tcsetpgrp(STDIN_FILENO, getpgid(getpid()));
+	if (status == -1) {
+		cerr << "Unable to reset foreground PGID to shell: " << strerror(errno) << std::endl;
+		return -1;
+	}
+
+	return exit_status;
+}
+
+// Execute the program described by this command. If successful, will not
+// return because it overwrites the existing program.
+void Shell::Run(Command cmd) const {
+
+}

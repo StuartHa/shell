@@ -1,0 +1,22 @@
+#include <cstdlib>
+#include <iostream>
+#include <string>
+
+#include "shell.h"
+#include "path_resolver.h"
+
+using std::cin;
+using std::string;
+
+int main(void) {
+	Command cmd;
+	cmd.filename = "/bin/ls";
+	cmd.argv = {"ls", "/home/stuart/dev/shell/shell"};
+	cmd.envp = {};
+
+	Shell shell(PathResolver("/bin"));
+	shell.Execute(cmd, stdout);
+	std::cout << "hai" << std::endl;
+
+	return EXIT_SUCCESS;
+}

@@ -1,0 +1,24 @@
+#ifndef PATH_RESOLVER
+#define PATH_RESOLVER
+
+#include <string>
+#include <vector>
+
+#include "utils/string_utils.h"
+
+class PathResolver {
+public:
+	PathResolver(const std::string& colon_delim_path):
+		path_(utils::Split(colon_delim_path, ':')) {}
+
+	// For each directory specified in the path, check if there is a file with
+	// the given name and return the path to the first such file found.
+	//
+	// If no such file is found or an error occurred, then return an empty
+	// string.
+	std::string Resolve(const std::string& name);
+private:
+	std::vector<std::string> path_;
+};
+
+#endif  // PATH_RESOLVER

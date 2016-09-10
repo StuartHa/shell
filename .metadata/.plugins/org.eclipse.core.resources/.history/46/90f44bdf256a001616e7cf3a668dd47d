@@ -1,0 +1,24 @@
+#include "string_utils.h"
+
+using std::string;
+using std::vector;
+
+// hi
+// start = 0, end = 3
+//
+vector<string> Split(const string& str, char delim) {
+	vector<string> tokens;
+	int start = 0;
+	for (int end = 0; end < str.size(); end++) {
+		if (str[end] == delim) {
+			if (end > start) {
+				tokens.push_back(str.substr(start, end - start));
+			}
+			start = end + 1;
+		}
+	}
+	if (start < str.size()) {
+		tokens.push_back(str.substr(start));
+	}
+	return tokens;
+}

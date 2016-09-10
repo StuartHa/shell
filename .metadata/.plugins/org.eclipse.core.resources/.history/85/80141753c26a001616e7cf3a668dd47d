@@ -1,0 +1,12 @@
+#include "path_resolver.h"
+
+#include <dirent.h>
+
+using std::string;
+
+string PathResolver::Resolve(const string& name) {
+	for (const string& dir : path_) {
+		DIR* dir_stream = opendir(dir.c_str());
+
+	}
+}

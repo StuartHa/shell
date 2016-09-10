@@ -1,0 +1,36 @@
+cc_library(
+    name = "string_utils",
+    srcs = ["string_utils.cc"],
+    hdrs = ["string_utils.h"],
+)
+
+
+cc_test(
+    name = "string_utils_test",
+    srcs = ["string_utils_test.cc"],
+    copts = ["-Iexternal/gtest/include"],
+    deps = [
+        "@gtest//:main",
+        "@gmock//:main",
+        ":string_utils",
+    ],
+    timeout = "short"
+)
+
+cc_library(
+    name = "path_resolver",
+    srcs = ["path_resolver.cc"],
+    hdrs = ["path_resolver.h"],
+)
+
+cc_test(
+    name = "path_resolver_test",
+    srcs = ["path_resolver_test.cc"],
+    copts = ["-Iexternal/gtest/include"],
+    deps = [
+        "@gtest//:main",
+        "@gmock//:main",
+        ":string_utils",
+    ],
+    timeout = "short"
+)

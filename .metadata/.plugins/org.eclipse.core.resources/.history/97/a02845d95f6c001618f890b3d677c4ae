@@ -1,0 +1,13 @@
+#ifndef STRING_UTILS
+#define STRING_UTILS
+
+#include <string>
+#include <vector>
+
+namespace utils {
+
+std::vector<std::string> Split(const std::string& str, char delim);
+
+}  // namespace utils
+
+#endif  // STRING_UTILS

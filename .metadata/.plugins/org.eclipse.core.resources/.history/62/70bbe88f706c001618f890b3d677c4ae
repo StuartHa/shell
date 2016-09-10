@@ -1,0 +1,18 @@
+#include <cstdlib>
+#include <iostream>
+#include <string>
+
+using std::cin;
+using std::string;
+
+int main(void) {
+	Command cmd;
+	cmd.filename = "/bin/ls";
+	cmd.argv = {"ls", "/home/stuart/dev/shell/shell"};
+	cmd.envp = {};
+
+	Shell shell(PathResolver("/bin"));
+	shell.Execute(cmd, stdout);
+
+	return EXIT_SUCCESS;
+}

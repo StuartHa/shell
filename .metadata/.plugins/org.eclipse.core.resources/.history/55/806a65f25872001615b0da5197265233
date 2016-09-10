@@ -1,0 +1,95 @@
+#include <cstdio>
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+#include "piped_commands.h"
+
+using testing::ElementsAre;
+
+TEST(Command_Parse, Basic) {
+	Command cmd;
+	bool status = Command::Parse("wc -l", &cmd);
+
+	EXPECT_TRUE(status);
+	EXPECT_THAT(cmd.argv, ElementsAre("wc", "-l"));
+	EXPECT_EQ("", cmd.input);
+	EXPECT_EQ("", cmd.output);
+}
+
+TEST(Command_Parse, Output) {
+	Command cmd;
+	bool status = Command::Parse("ls >out.txt -l", &cmd);
+
+	EXPECT_TRUE(status);
+	EXPECT_THAT(cmd.argv, ElementsAre("ls", "-l"));
+	EXPECT_EQ("", cmd.input);
+	EXPECT_EQ("out.txt", cmd.output);
+}
+
+TEST(Command_Parse, TwoTokenOutput) {
+	Command cmd;
+	bool status = Command::Parse("ls >   out.txt -l", &cmd);
+
+	EXPECT_TRUE(status);
+	EXPECT_THAT(cmd.argv, ElementsAre("ls", "-l"));
+	EXPECT_EQ("", cmd.input);
+	EXPECT_EQ("out.txt", cmd.output);
+}
+
+TEST(Command_Parse, UnspecifiedOutput) {
+	Command cmd;
+	bool status = Command::Parse("ls -l >", &cmd);
+
+	EXPECT_FALSE(status);
+}
+
+TEST(Command_Parse, Input) {
+	Command cmd;
+	bool status = Command::Parse("ls -l <in.txt", &cmd);
+
+	EXPECT_TRUE(status);
+	EXPECT_THAT(cmd.argv, ElementsAre("ls", "-l"));
+	EXPECT_EQ("in.txt", cmd.input);
+	EXPECT_EQ("", cmd.output);
+}
+
+TEST(Command_Parse, TwoTokenInput) {
+	Command cmd;
+	bool status = Command::Parse("ls -l < in.txt", &cmd);
+
+	EXPECT_TRUE(status);
+	EXPECT_THAT(cmd.argv, ElementsAre("ls", "-l"));
+	EXPECT_EQ("in.txt", cmd.input);
+	EXPECT_EQ("", cmd.output);
+}
+
+TEST(Command_Parse, UnspecifiedInput) {
+	Command cmd;
+	bool status = Command::Parse("ls -l <", &cmd);
+
+	EXPECT_FALSE(status);
+}
+
+TEST(Command_Parse, InputAndOutput) {
+	Command cmd;
+	bool status = Command::Parse(">out.txt /bin/ls <in.txt", &cmd);
+
+	EXPECT_TRUE(status);
+	EXPECT_THAT(cmd.argv, ElementsAre("/bin/ls"));
+	EXPECT_EQ("in.txt", cmd.input);
+	EXPECT_EQ("out.txt", cmd.output);
+}
+
+TEST(Command_Parse, Empty) {
+	Command cmd;
+	bool status = Command::Parse("", &cmd);
+
+	EXPECT_FALSE(status);
+}
+
+TEST(PipedCommands_Parse, Basic) {
+	PipedCommands piped_cmds;
+	bool status = PipedCommands::Parse("ls | wc -l", &piped_cmds);
+
+	EXPECT_TRUE(status);
+}
+

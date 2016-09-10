@@ -1,0 +1,24 @@
+#include <cstdlib>
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
+#include "string_utils.h"
+
+using std::string;
+using std::vector;
+
+void CreateDirectoryWithFiles(const string& dir_name,
+							  const vector<string>& file_names) {
+	const string dir_base_path = getenv("TEST_TMPDIR");
+	const string dir_path = dir_base_path +
+		(*dir_base_path.rbegin() == '/' ? "" : "/") + dir_name;
+	mkdir(dir_path.c_str(), /*octal*/ 0777);
+
+}
+
+TEST(Split, Basic) {
+	vector<string> expected {"how", "now", "brown", "cow"};
+	EXPECT_THAT(expected, Split("how now brown cow", ' '));
+}

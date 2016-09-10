@@ -1,0 +1,102 @@
+#include <cstdio>
+#include <cstring>
+#include <fcntl.h>
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
+#include "shell.h"
+#include "utils/test_utils.h"
+
+using std::string;
+using std::vector;
+
+FILE* CreateOutputFile(const string& file_name) {
+	const string dir_base_path = getenv("TEST_TMPDIR");
+	const string output_file_path = dir_base_path +
+		"/" + file_name;
+	return fopen(output_file_path.c_str(), "w");
+}
+
+string ReadOutputFile(const string& file_name) {
+	const string output_file_path = string(getenv("TEST_TMPDIR")) +
+		"/" + file_name;
+	std::ifstream t(output_file_path);
+	std::stringstream buffer;
+	buffer << t.rdbuf();
+	return buffer.str();
+
+}
+
+TEST(Execute, ls) {
+	// Create a directory with a single empty file.
+	CreateDirectoryWithFiles("test_ls", vector<string>{"a", "b"});
+	string output_file_name = "ls_output.dat";
+	FILE* output_file = CreateOutputFile(output_file_name);
+
+	Command cmd;
+	cmd.filename = "ls";
+	string path_to_ls = string(getenv("TEST_TMPDIR")) + "/test_ls";
+	std::cout << path_to_ls << std::endl;
+	cmd.argv = {"ls", path_to_ls.c_str()};
+
+	Shell shell;
+	shell.Execute(cmd, output_file);
+
+	EXPECT_EQ(ReadOutputFile(output_file_name), "a\nb\n");
+}
+
+TEST(Execute, Pipe) {
+	// Create a directory with a single empty file.
+	CreateDirectoryWithFiles("test_pipe", vector<string>{"a", "b"});
+	string output_file_name = "pipe_output.dat";
+	FILE* output_file = CreateOutputFile(output_file_name);
+
+	Command ls_cmd;
+	ls_cmd.filename = "ls";
+	string path_to_ls = string(getenv("TEST_TMPDIR")) + "/test_pipe";
+	ls_cmd.argv = {"ls", path_to_ls.c_str()};
+
+	Command wc_cmd;
+	wc_cmd.filename = "wc";
+	// Count number of words.
+	wc_cmd.argv = {"wc", "-w"};
+
+	PipedCommands piped_cmds = PipedCommands(ls_cmd).Pipe(wc_cmd);
+
+	Shell shell;
+	shell.Execute(piped_cmds, output_file);
+
+	EXPECT_EQ(ReadOutputFile(output_file_name), "2\n");
+}
+
+TEST(Execute, MultiplePipes) {
+	// Create a directory with a single empty file.
+	CreateDirectoryWithFiles("test_multiple_pipes", vector<string>{"a", "b"});
+	string output_file_name = "multiple_pipes_output.dat";
+	FILE* output_file = CreateOutputFile(output_file_name);
+
+	Command ls_cmd;
+	ls_cmd.filename = "ls";
+	string path_to_ls = string(getenv("TEST_TMPDIR")) + "/test_multiple_pipes";
+	ls_cmd.argv = {"ls", path_to_ls.c_str()};
+
+	Command wc_cmd_first;
+	wc_cmd_first.filename = "wc";
+	// Count number of words.
+	wc_cmd_first.argv = {"wc", "-w"};
+
+	Command wc_cmd_second;
+	wc_cmd_second.filename = "wc";
+	// Count number of words.
+	wc_cmd_second.argv = {"wc", "-w"};
+
+	PipedCommands piped_cmds = PipedCommands(ls_cmd).Pipe(wc_cmd_first).Pipe(wc_cmd_second);
+
+	Shell shell;
+	shell.Execute(piped_cmds, output_file);
+
+	EXPECT_EQ(ReadOutputFile(output_file_name), "1d\n");
+}

@@ -1,0 +1,19 @@
+#include "path_resolver.h"
+
+#include <cstring>
+#include <dirent.h>
+#include <cerrno>
+#include <iostream>
+
+using std::cerr;
+using std::endl;
+using std::string;
+
+string PathResolver::Resolve(const string& name) {
+	for (const string& dir : path_) {
+		DIR* dir_stream = opendir(dir.c_str());
+		if (dir_stream == nullptr) {
+			cerr << "Error opening directory: " << std::strerror(errno) << endl;
+		}
+	}
+}

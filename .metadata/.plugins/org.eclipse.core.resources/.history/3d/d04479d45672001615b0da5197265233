@@ -1,0 +1,84 @@
+#include "piped_commands.h"
+
+#include <cstdio>
+#include <cstring>
+#include <errno.h>
+#include <iostream>
+#include "utils/string_utils.h"
+
+using std::cerr;
+using std::endl;
+using std::string;
+using std::vector;
+
+bool SetOutput(const string& output_filename,
+			   Command* output_command) {
+	FILE* output_file = fopen(output_filename.c_str(), "w");
+	if (output_file == nullptr) {
+		cerr << "Invalid output file: " << strerror(errno) << endl;
+		return false;
+	}
+	output_command->output = output_file;
+	return true;
+}
+
+bool SetInput(const string& input_filename,
+		      Command* output_command) {
+	FILE* input_file = fopen(input_filename.c_str(), "w");
+	if (input_file == nullptr) {
+		cerr << "Invalid input file: " << strerror(errno) << endl;
+		return false;
+	}
+	output_command->input = input_file;
+	return true;
+}
+
+// static
+bool Command::Parse(const string command_str,
+					Command* output_command) {
+	vector<string> tokens = ::utils::Split(command_str, ' ');
+	bool next_token_is_output = false;
+	bool next_token_is_input = false;
+	for (const string& token : tokens) {
+
+		// Parse output file.
+		if (next_token_is_output) {
+			next_token_is_output = false;
+			output_command->output = token;
+		} else if (token == ">") {
+			next_token_is_output = true;
+		} else if (*token.begin() == '>') {
+			output_command->output = token.substr(1);
+		}
+		// Parse input file.
+		else if (next_token_is_input) {
+			next_token_is_input = false;
+			output_command->input = token;
+		} else if (token == "<") {
+			next_token_is_input = true;
+		} else if (*token.begin() == '<') {
+			output_command->input = token.substr(1);
+		} else {
+			// Parse normal argument.
+			output_command->argv.push_back(token);
+		}
+	}
+	if (output_command->argv.size() == 0) {
+		return false;
+	}
+
+	return true;
+}
+
+// wc < a.txt | wc
+bool PipedCommands::Parse(const string& piped_commands_str,
+   	 	 	 	 	   	  PipedCommands* output_piped_commands) {
+	vector<string> cmd_strs = ::utils::Split(piped_commands_str, '|');
+	for (const string& cmd_str : cmd_strs) {
+		Command cmd;
+		if (!Command::Parse(cmd_str, &cmd))
+			return false;
+		output_piped_commands->Pipe(cmd);
+	}
+	return true;
+}

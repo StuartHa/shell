@@ -1,0 +1,5 @@
+#include "piped_commands.h"
+
+PipedCommands PipedCommands::Parse(const std::string& piped_command) {
+
+}

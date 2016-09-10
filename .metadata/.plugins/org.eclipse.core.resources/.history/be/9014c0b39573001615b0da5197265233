@@ -1,0 +1,34 @@
+#ifndef PIPED_COMMANDS
+#define PIPED_COMMANDS
+
+#include <string>
+#include <vector>
+#include <cstdio>
+
+struct Command {
+	std::vector<std::string> argv;
+
+	static bool Parse(const std::string command_str,
+			   	   	  Command* output_command);
+
+	std::string input;
+	std::string output;
+};
+
+struct PipedCommands {
+	PipedCommands() {};
+
+	PipedCommands(const Command& cmd): cmds{cmd} {}
+
+	PipedCommands Pipe(const Command& cmd) {
+		cmds.push_back(cmd);
+		return *this;
+	}
+
+	static bool Parse(const std::string& piped_commands_str,
+	   	 	   PipedCommands* output_piped_commands);
+
+	std::vector<Command> cmds;
+};
+
+#endif  // PIPED_COMMANDS

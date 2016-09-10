@@ -1,0 +1,16 @@
+#include <iostream>
+#include <string>
+#include <cstdlib>
+
+using std::cin;
+using std::string;
+
+int main(void) {
+	while (true) {
+		string input;
+		cin.getline(input);
+
+	}
+	puts("Hello World!!!");
+	return EXIT_SUCCESS;
+}

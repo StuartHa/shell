@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">&#x0A;<refactoring comment="Rename resource &apos;shell/piped_command.h&apos; to &apos;piped_commands.h&apos;" description="Rename resource &apos;piped_command.h&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="piped_command.h" name="piped_commands.h" stamp="1472611410974" updateReferences="true"/>&#x0A;<refactoring comment="Rename resource &apos;shell/piped_command.cc&apos; to &apos;piped_commands.cc&apos;" description="Rename resource &apos;piped_command.cc&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="piped_command.cc" name="piped_commands.cc" stamp="1472611423356" updateReferences="true"/>
+</session>

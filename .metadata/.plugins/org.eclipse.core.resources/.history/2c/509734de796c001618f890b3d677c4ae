@@ -1,0 +1,53 @@
+#ifndef SHELL
+#define SHELL
+
+#include <iostream>
+#include <string>
+#include <unistd.h>
+#include <vector>
+
+#include "path_resolver.h"
+
+struct Command {
+	std::string filename;
+	std::vector<std::string> argv;
+	std::vector<std::string> envp;
+};
+
+class PipedCommands {
+public:
+	PipedCommands(const Command& cmd): cmds_{cmd} {}
+
+	PipedCommands Pipe(const Command& cmd) {
+		cmds_.push_back(cmd);
+		return *this;
+	}
+
+	std::vector<Command> GetCommands() const {
+		return cmds_;
+	}
+private:
+	std::vector<Command> cmds_;
+};
+
+class Shell {
+public:
+	Shell(const PathResolver& path_resolver):
+		path_resolver_(path_resolver) {};
+
+	int Execute(const PipedCommands& piped_cmds, FILE* output_file);
+private:
+	void Run(Command cmd) const;
+	struct PipeDescriptor {
+		PipeDescriptor(int read_fd_arg, int write_fd_arg): read_fd(read_fd_arg),
+			write_fd(write_fd_arg) {}
+
+		int read_fd;
+		int write_fd;
+	};
+
+	PathResolver path_resolver_;
+};
+
+
+#endif  //  SHELL

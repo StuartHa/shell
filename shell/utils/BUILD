@@ -1,0 +1,26 @@
+package(default_visibility = ["//shell:__subpackages__"])
+
+cc_library(
+    name = "string_utils",
+    srcs = ["string_utils.cc"],
+    hdrs = ["string_utils.h"],
+)
+
+
+cc_test(
+    name = "string_utils_test",
+    srcs = ["string_utils_test.cc"],
+    copts = ["-Iexternal/gtest/include"],
+    deps = [
+        "@gtest//:main",
+        "@gmock//:main",
+        ":string_utils",
+    ],
+    timeout = "short"
+)
+
+cc_library(
+    name = "test_utils",
+    srcs = ["test_utils.cc"],
+    hdrs = ["test_utils.h"],
+)

@@ -1,0 +1,41 @@
+#include <cstdlib>
+#include <fcntl.h>
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+#include "path_resolver.h"
+#include "utils/string_utils.h"
+#include "utils/test_utils.h"
+
+using std::string;
+using std::vector;
+
+TEST(Resolve, Basic) {
+	CreateDirectoryWithFiles("basic", vector<string>{"a", "b", "c"});
+	string dir_base_path = string(getenv("TEST_TMPDIR")) + "/";
+	PathResolver path_resolver(dir_base_path + "basic");
+
+	EXPECT_EQ(dir_base_path + "basic/a", path_resolver.Resolve("a"));
+	EXPECT_EQ(dir_base_path + "basic/b", path_resolver.Resolve("b"));
+	EXPECT_EQ(dir_base_path + "basic/c", path_resolver.Resolve("c"));
+	EXPECT_EQ("d", path_resolver.Resolve("d"));
+}
+
+TEST(Resolve, TakeFirstOccurrenceInPath) {
+	CreateDirectoryWithFiles("first", vector<string>{"a"});
+	CreateDirectoryWithFiles("first2", vector<string>{"a", "b"});
+	string dir_base_path = string(getenv("TEST_TMPDIR")) + "/";
+	PathResolver path_resolver(dir_base_path + "first:" + dir_base_path + "first2");
+
+	EXPECT_EQ(dir_base_path + "first/a", path_resolver.Resolve("a"));
+	EXPECT_EQ(dir_base_path + "first2/b", path_resolver.Resolve("b"));
+}
+
+TEST(Resolve, TakeFirsftOccurrenceInPath) {
+	PathResolver path_resolver(getenv("PATH"));
+
+	EXPECT_EQ(a", path_resolver.Resolve("ls"));
+}
